@@ -1,0 +1,17 @@
+version: '4.9'
+service:
+  api-server:
+    image: api-server
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+    network: bookmark-api
+  mongo:
+    image: mongo
+    ports:
+      - "27017:27017"
+    environment:
+      - DB_NAME: nest
+    network: bookmark-api
+network: bookmark-api

@@ -1,19 +1,21 @@
 import * as mongoose from 'mongoose';
+import { timestamp } from "rxjs";
 
 export interface User {
   createAt: string;
-  updateAt: string;
-  emails: string;
+  updateAt: Date;
+  email: string;
   username: string;
   password: string;
-  salt: string;
+  hash: string;
+  bookmark: Array<string>;
 }
 
 export const UserSchema = new mongoose.Schema({
-  createAt: { type: Date, default: Date.now },
-  updateAt: { type: Date },
-  emails: { type: String, required: true, unique: true },
+  createAt: { type: Date, default: Date.now() },
+  updateAt: { type: Date, default: Date.now() },
+  email: { type: String, required: true, unique: true },
   username: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  salt: { type: String },
-});
+  hash: { type: String },
+  bookmark: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Bookmark' }],
+})

@@ -12,6 +12,7 @@ export interface Bookmark {
     nbrPage: number;
     langue: string;
   };
+  user: string;
 }
 
 export const BookmarkSchema = new mongoose.Schema({
@@ -25,4 +26,5 @@ export const BookmarkSchema = new mongoose.Schema({
     nbrPage: { type: Number, required: true },
     langue: { type: String, required: true },
   },
+  user: { type: mongoose.Types.ObjectId, ref: 'User' },
 });

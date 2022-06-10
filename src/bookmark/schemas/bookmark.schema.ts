@@ -5,6 +5,7 @@ export interface Bookmark {
   titre: string;
   lien: string;
   categories: string;
+  cover: string;
   description: {
     auteur: string;
     dateSortie: string;
@@ -17,6 +18,7 @@ export const BookmarkSchema = new mongoose.Schema({
   titre: { type: String, required: true },
   lien: { type: String, required: true },
   categories: { type: String, required: true },
+  cover: String,
   description: {
     auteur: { type: String, required: true },
     dateSortie: Date,

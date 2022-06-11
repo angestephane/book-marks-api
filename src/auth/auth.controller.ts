@@ -12,7 +12,7 @@ export class AuthController {
   }
 
   @Post('connexion')
-  connexion(@Body() userAuth: ConnexionDto) {
-    this.authService.connexion(userAuth);
+  async connexion(@Body() userAuth: ConnexionDto) {
+    return await this.authService.connexion(userAuth);
   }
 }

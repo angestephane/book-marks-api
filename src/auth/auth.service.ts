@@ -57,16 +57,43 @@ export class AuthService {
     }
   }
 
-  connexion(userAuth: ConnexionDto) {
-    //Recherche via L'email
-
-    //Condition sur la données retournée
-      //SI la données est vide
-        //Retourn une exception
-      //Sinon on fait un test si le mdp est correct
-        //Si le mdp n'est pas correct
-          //Retourne une exception
-
-
+  async connexion(userAuth: ConnexionDto) {
+    //Recherche l'utilisateur via l'email
+    const user = await this.userModel.findOne(
+      { email: userAuth.email },
+      'username bookmark hash -_id',
+    );
+    //Check s'il existe un utilisateur avec ce mail
+    if (user) {
+      //Check le mot de passe
+      /***
+       * !argon.verify()
+       * @Params : -mdp dans la bdd
+       *           -mdp envoyé par le user
+       *@return : boolean - true si mdp match
+       *                  - false sinon
+       */
+      const mdpMatch = await argon.verify(user.hash, userAuth.password);
+      if (mdpMatch) {
+        const { bookmark, username } = user;
+        return { bookmark, username };
+      } else {
+        throw new HttpException(
+          {
+            status: HttpStatus.BAD_REQUEST,
+            error: 'Mot de passe incorrect',
+          },
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+    } else {
+      throw new HttpException(
+        {
+          status: HttpStatus.NOT_FOUND,
+          error: 'Aucun utilisateur avec ce mail !',
+        },
+        HttpStatus.NOT_FOUND,
+      );
+    }
   }
 }

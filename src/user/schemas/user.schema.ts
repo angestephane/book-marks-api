@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import { timestamp } from "rxjs";
+import { timestamp } from 'rxjs';
 
 export interface User {
   createAt: string;
@@ -18,4 +18,4 @@ export const UserSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   hash: { type: String },
   bookmark: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Bookmark' }],
-})
+});

@@ -4,15 +4,26 @@ import { ConnexionDto, InscriptionDto } from './dto';
 //Import le décorateur InjectModel de nestjs/mongoose
 import { InjectModel } from '@nestjs/mongoose';
 //Import Model de mongoose
-import { Model } from 'mongoose';
+import mongoose, { Model } from 'mongoose';
 import { User } from '../user/schemas/user.schema';
 
 //Import argon to hash password
 import * as argon from 'argon2';
 
+//Import JWTservice from nestjs/jwt
+import { JwtService } from '@nestjs/jwt';
+
+//Import dotenv
+import * as dotenv from 'dotenv';
+
+dotenv.config();
+
 @Injectable()
 export class AuthService {
-  constructor(@InjectModel('User') private readonly userModel: Model<User>) {}
+  constructor(
+    @InjectModel('User') private readonly userModel: Model<User>,
+    private jwt: JwtService,
+  ) {}
 
   async inscription(user: InscriptionDto) {
     //Ajouter un utilisateur dans la base de données
@@ -29,21 +40,8 @@ export class AuthService {
 
       await newUser.save();
 
-      //transformer la données à retourner à l'utilisateur
-      type UserDataTmp = Pick<
-        User,
-        'email' | 'username' | 'createAt' | 'updateAt' | 'bookmark'
-      >;
-      const data: UserDataTmp = {
-        email: newUser.email,
-        username: newUser.username,
-        createAt: newUser.createAt,
-        updateAt: newUser.updateAt,
-        bookmark: newUser.bookmark,
-      };
-
-      //Retourner l'utilisateur enregistré
-      return data;
+      //Retourner Le token de l'utilisateur
+      return await this.tokenConnexion(newUser._id, newUser.email);
     } catch (err) {
       if (err.name === 'MongoServerError' && err.code === 11000) {
         throw new HttpException(
@@ -61,7 +59,7 @@ export class AuthService {
     //Recherche l'utilisateur via l'email
     const user = await this.userModel.findOne(
       { email: userAuth.email },
-      'username bookmark hash -_id',
+      'username bookmark hash _id',
     );
     //Check s'il existe un utilisateur avec ce mail
     if (user) {
@@ -75,8 +73,7 @@ export class AuthService {
        */
       const mdpMatch = await argon.verify(user.hash, userAuth.password);
       if (mdpMatch) {
-        const { bookmark, username } = user;
-        return { bookmark, username };
+        return await this.tokenConnexion(user._id, user.email);
       } else {
         throw new HttpException(
           {
@@ -95,5 +92,20 @@ export class AuthService {
         HttpStatus.NOT_FOUND,
       );
     }
+  }
+
+  tokenConnexion(
+    userId: mongoose.Types.ObjectId,
+    email: string,
+  ): Promise<string> {
+    const payload = {
+      sub: userId,
+      email,
+    };
+    const secret = process.env.SECRET_KEY;
+    return this.jwt.signAsync(payload, {
+      secret: secret,
+      expiresIn: '15m',
+    });
   }
 }

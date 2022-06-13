@@ -3,6 +3,7 @@ import { ConnexionDto, InscriptionDto } from './dto';
 
 //Import le décorateur InjectModel de nestjs/mongoose
 import { InjectModel } from '@nestjs/mongoose';
+
 //Import Model de mongoose
 import mongoose, { Model } from 'mongoose';
 import { User } from '../user/schemas/user.schema';
@@ -59,7 +60,7 @@ export class AuthService {
     //Recherche l'utilisateur via l'email
     const user = await this.userModel.findOne(
       { email: userAuth.email },
-      'username bookmark hash _id',
+      'username bookmark hash _id email',
     );
     //Check s'il existe un utilisateur avec ce mail
     if (user) {
@@ -94,18 +95,20 @@ export class AuthService {
     }
   }
 
-  tokenConnexion(
+  async tokenConnexion(
     userId: mongoose.Types.ObjectId,
     email: string,
-  ): Promise<string> {
+  ): Promise<{ accessToken: string }> {
     const payload = {
       sub: userId,
-      email,
+      email: email,
     };
     const secret = process.env.SECRET_KEY;
-    return this.jwt.signAsync(payload, {
+    const token = await this.jwt.signAsync(payload, {
       secret: secret,
       expiresIn: '15m',
     });
+
+    return { accessToken: token };
   }
 }

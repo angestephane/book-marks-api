@@ -10,6 +10,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 //Import UserSchema pour permettre l'injection de dépendance
 import { UserSchema } from '../user/schemas/user.schema';
 import { JwtModule } from '@nestjs/jwt';
+import { JwtStrategy } from './strategy';
 
 @Module({
   imports: [
@@ -17,6 +18,6 @@ import { JwtModule } from '@nestjs/jwt';
     JwtModule,
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [AuthService, JwtStrategy],
 })
 export class AuthModule {}
